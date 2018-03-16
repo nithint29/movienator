@@ -6,11 +6,16 @@ features = ['Adult', 'Budget', 'Runtime', 'vote_average', 'Popularity', 'origina
 complex_features = ['spoken_languages', 'production_countries', 'Genres', 'production_companies']
 # Genres = {'Western', 'Action', 'Comedy', 'Romance', 'Documentary', 'Thriller', 'War', 'Crime', 'Science Fiction', 'History', 'Mystery', 'Music', 'Fantasy', 'Adventure', 'Foreign', 'Family', 'Horror', 'Animation', 'Drama'}
 
-def pre_process(data):
+def pre_process(data, f = None, cf = None):
+    if (cf != None):
+        complex_features = cf
+    if(f != None):
+        features = f
+
     X = []
     Y = []
     for movie in data:
-        print(movie['original_title'])
+        print(movie['Title'])
         x = {}
         for f in features:
             x[f] = movie[f]
@@ -26,13 +31,6 @@ def pre_process(data):
 
     return X, Y
 
-# def get_genres(response):
-#     s = set([])
-#     for movie in response['Items']:
-#         for g in movie['Genres'] if movie['Genres'] != None else []:
-#             s.add(g['Name'])
-#
-#     return list(s)
 
 def extractor(response, dictList, attribute):
     ### example: extractor(table.scan()['Items'], 'Genres', 'Name')
@@ -80,8 +78,18 @@ if __name__=='__main__':
 
     # print(extractor(response['Items'], 'spoken_languages', 'Name'))
 
-    data = table.scan()['Items']
-    X,Y = pre_process(data)
+    # data = table.scan()['Items']
+    # X,Y = pre_process(data)
+
+    response = table.scan()
+    data = response['Items']
+    print(len(data))
+
+    while response.get('LastEvaluatedKey'):
+        response = table.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
+        data.extend(response['Items'])
+
+    print(len(data))
 
 
 
