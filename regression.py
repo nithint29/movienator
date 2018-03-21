@@ -10,6 +10,8 @@ from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import cross_val_predict
 from sklearn.feature_extraction import DictVectorizer
 import numpy as np
+import preprocessing
+from preprocessing import pre_process
 
 import math
 
@@ -27,50 +29,11 @@ class DenseTransformer(TransformerMixin):
     def fit(self, X, y=None, **fit_params):
         return self
 
-def pre_process(data):
-    X = []
-    Y = []
-    for movie in data:
-        #print(movie['original_title'])
-        x = {}
-        for f in features:
-            x[f] = movie[f]
-
-        for cf in complex_features:
-            simp= cleaner(movie, cf, 'Name')
-
-            for s in simp:
-                x[s] = True
-
-        Y.append(movie['Revenue'])
-        X.append(x)
-
-    return X, Y
-
-def extractor(response, dictList, attribute):
-    ### example: extractor(table.scan()['Items'], 'Genres', 'Name')
-
-    s = set([])
-    for movie in response:
-        for g in movie[dictList] if movie[dictList] != None else []:
-            s.add(g[attribute])
-
-    return list(s)
-
-def cleaner(movie, dictList, attribute):
-    ### example: extractor(movie, 'Genres', 'Name')
-
-    s = set([])
-    for g in movie[dictList] if movie[dictList] != None else []:
-        s.add(g[attribute])
-
-    return list(s)
-
 
 dynamodb = boto3.resource('dynamodb')
 table = dynamodb.Table('movies')
 rows = table.scan(FilterExpression=Attr('Budget').gt(1000))['Items']
-data,target = pre_process(rows)
+data,target = pre_process(rows, features, complex_features)
 
 reg = make_pipeline(DictVectorizer(), DenseTransformer(), LinearRegression())
 scores = cross_val_score(reg, data, target, cv=10)
