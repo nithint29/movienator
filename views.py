@@ -5,36 +5,30 @@ import time
 import argparse
 import http.client
 import google.oauth2.credentials
-from pytrends.request import TrendReq
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from google_auth_oauthlib.flow import InstalledAppFlow
-
-"""
-# The CLIENT_SECRETS_FILE variable specifies the name of a file that contains
-# the OAuth 2.0 information for this application, including its client_id and
-# client_secret.
-CLIENT_SECRETS_FILE = "client_secret_310063786675-kk87kddiv3g0ua9n8eous466tn273422.apps.googleusercontent.com.json"
-
-# This OAuth 2.0 access scope allows for full read/write access to the
-# authenticated user's account and requires requests to use an SSL connection.
-SCOPES = ['https://www.googleapis.com/auth/youtube.force-ssl']
-API_SERVICE_NAME = 'youtube'
-API_VERSION = 'v3'
-
-def get_authenticated_service():
-  flow = InstalledAppFlow.from_client_secrets_file(CLIENT_SECRETS_FILE, SCOPES)
-  credentials = flow.run_console()
-  return build(API_SERVICE_NAME, API_VERSION, credentials = credentials)
-"""
 
 DEVELOPER_KEY = 'AIzaSyAjWDb7sC0cKDFe3HU-09WeRpA_6TgANyw'
 YOUTUBE_API_SERVICE_NAME = 'youtube'
 YOUTUBE_API_VERSION = 'v3'
 
-def append_titles(titles, response):
-    for i in range(0, len(response['Items'])):
-        title = response['Items'][i]['original_title']
+def scan_table():
+    response = table.scan()
+
+    items = response['Items']
+    while True:
+        if response.get('LastEvaluatedKey'):
+            response = table.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
+            items += response['Items']
+        else:
+            break
+
+    return items
+    
+def append_titles(titles, items):
+    for item in items:
+        title = item['Title']
         titles.append(title)
 
 def youtube_search(options):
@@ -48,30 +42,30 @@ def youtube_search(options):
     results = youtube.videos().list(part='snippet,statistics',id=vid).execute()
 
     if 'statistics' in results['items'][0]:
-        vc = results['items'][0]['statistics']['viewCount']
-    
+        if 'viewCount' in results['items'][0]['statistics']: #account for videos without viewcount
+            vc = results['items'][0]['statistics']['viewCount']
+        else:
+            vc = -1
     else:
-        print('There aren\'t any localizations for this video yet.')
+        print('There aren\'t any stats for this video yet.')
     
     return vc
-#video_keys=[]
 
 if __name__ == "__main__":
+    
     # Get the service resource.
     dynamodb = boto3.resource('dynamodb')
-
-    table = dynamodb.Table('movies')
-    print(table.creation_date_time)
-
-    response = table.scan()
+    table = dynamodb.Table('movies_new')
 
     titles=[]
     views=[]
-    append_titles(titles, response)
+    data = scan_table()
+    #print(len(data))
 
-    print(len(titles))
+    append_titles(titles, data)
+    #print(len(titles))
 
-    
+    #get viewcount for all items
     for i in range(0, len(titles)):
         parser = argparse.ArgumentParser()
         parser.add_argument('--q', help='Search term', default=titles[i] + " trailer")
@@ -81,34 +75,31 @@ if __name__ == "__main__":
         try:
             view = youtube_search(args)
             views.append(view)
+            #count+=1
+            #print(count)
 
-        except HttpError as e:
-            print('An HTTP error %d occurred:\n%s' % (e.resp.status, e.content))
+        except (KeyError, HttpError) as e:
+            pass
+            print('An error %d occurred:\n%s' % (e.resp.status, e.content))            
 
         time.sleep(1)
     
-    for i in range(0, len(views)):
-        print(views[i])
+    #print(len(views))
     
-    
-    """
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--q', help='Search term', default=titles[0] + " trailer")
-    parser.add_argument('--max-results', help='Max results', default=1)
-    args = parser.parse_args()
-
-    try:
-        view = youtube_search(args)
-        print(view)
-        #print(contents[0]['items']['id']['videoId'])
-    except HttpError as e:
-        print('An HTTP error %d occurred:\n%s' % (e.resp.status, e.content))
-    """
-    
-    
-
-
-
-
-
-
+    #update table with viewcount
+    for item, v in zip(data, views) :
+        response = table.update_item(
+            Key={
+                'Title': item['Title'],
+                'ID': item['ID'] 
+            },
+            UpdateExpression="set #attrName = :attrValue",
+            ExpressionAttributeNames={
+                "#attrName" : "trailerViews"
+            },
+            ExpressionAttributeValues={
+                ':attrValue': int(v)
+            },
+            ConditionExpression="attribute_exists(Title) and attribute_exists(ID)",
+            ReturnValues="UPDATED_NEW"
+        )
