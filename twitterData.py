@@ -6,8 +6,20 @@ api = twitter.Api(consumer_key='z8MkWcyiR6P9v2qBNVrMjGdjV',
                       access_token_secret='lwMgy9T3KbNGpL7aFKNbynCYljsmhcpITnsCe5aHhpUh5')
 
 
-results = api.GetSearch(
-    raw_query="l=&q=\"Black%20Panther\"%20since%3A2018-03-12%20until%3A2018-03-13")
+# results = api.GetSearch(
+#     raw_query="l=&q=%23Hugo%20since%3A2011-09-01%20until%3A2011-11-22")
+#
+# for r in results:
+#     print(r)
+# print(len(results))
 
-print(results)
+print(api.base_url)
+
+
+results = api.GetSearch(
+    raw_query="query=TwitterDev%20%5C%22search%20api%5C%22&maxResults=100&fromDate=201701010000&toDate=201802010000")
+
+for r in results:
+    print(r)
 print(len(results))
+

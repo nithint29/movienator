@@ -1,10 +1,20 @@
 import boto3
 from boto3.dynamodb.conditions import Key, Attr
-from sklearn.feature_extraction import DictVectorizer
+import json
+import decimal
 
 features = ['Adult', 'Budget', 'Runtime', 'vote_average', 'Popularity', 'original_language', 'vote_count']
 complex_features = ['spoken_languages', 'production_countries', 'Genres', 'production_companies']
 # Genres = {'Western', 'Action', 'Comedy', 'Romance', 'Documentary', 'Thriller', 'War', 'Crime', 'Science Fiction', 'History', 'Mystery', 'Music', 'Fantasy', 'Adventure', 'Foreign', 'Family', 'Horror', 'Animation', 'Drama'}
+
+class DecimalEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, decimal.Decimal):
+            if o % 1 > 0:
+                return float(o)
+            else:
+                return int(o)
+        return super(DecimalEncoder, self).default(o)
 
 def pre_process(data, f = None, cf = None):
     if (cf != None):
@@ -51,7 +61,35 @@ def cleaner(movie, dictList, attribute):
 
     return list(s)
 
+def fullscan(table):
+    response = table.scan()
+    data = response['Items']
 
+    while response.get('LastEvaluatedKey'):
+        response = table.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
+        data.extend(response['Items'])
+    return data
+
+def release_info(table):
+    response = fullscan(table)
+
+    for movie in response:
+        release= movie['release_date'].split('-')
+        month = decimal.Decimal(release[1])
+        quarter = decimal.Decimal( (int(release[1])-1)//3 + 1)
+        update = table.update_item(
+            Key={
+                'Title':movie['Title'],
+                'ID':movie['ID']
+            },
+            UpdateExpression="set release_month = :m, release_quarter = :q",
+            ExpressionAttributeValues={
+                ':m':month,
+                ':q':quarter
+            },
+            ReturnValues="UPDATED_NEW"
+        )
+        print(update)
 
 
 if __name__=='__main__':
@@ -66,30 +104,12 @@ if __name__=='__main__':
         KeyConditionExpression=Key('Title').eq("Inception")
     )
 
-    # print(response['Items'][0])
-
-    # for cf in complex_features:
-    #     simplified = cleaner(response['Items'][0], cf, 'Name')
-    #     print(cf)
-    #     print(response['Items'][0][cf])
-
-
-    # pre_process(response['Items'])
-
-    # print(extractor(response['Items'], 'spoken_languages', 'Name'))
-
-    # data = table.scan()['Items']
-    # X,Y = pre_process(data)
-
-    response = table.scan()
-    data = response['Items']
-    print(len(data))
-
-    while response.get('LastEvaluatedKey'):
-        response = table.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
-        data.extend(response['Items'])
+    data = fullscan(table)
 
     print(len(data))
+
+    release_info(table)
+
 
 
 
