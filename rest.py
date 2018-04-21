@@ -3,8 +3,9 @@ import boto3
 
 app = Flask(__name__)
 
+# GET
 @app.route("/movies")
-def retrieve_movies(table):
+def retrieve_revenue(table):
     response = table.scan(
         ExpressionAttributeValues={
             ':status':'Released',
@@ -32,13 +33,15 @@ def retrieve_movies(table):
         else:
             break
 
-    return items
+    revenues=[]
+    for item in items:
+        revenues.append(item['revenue'])
+    
+    return revenues
 
 if __name__ == '__main__':
     
-    #dynamodb = boto3.resource('dynamodb')
-    #table = dynamodb.Table('movies')
-
-    #items=retrieve_movies(table)
+    # dynamodb = boto3.resource('dynamodb')
+    # table = dynamodb.Table('movies')
 
     app.run(host='0.0.0.0', port=5000)
