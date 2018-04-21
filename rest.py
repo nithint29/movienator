@@ -4,7 +4,7 @@ import boto3
 app = Flask(__name__)
 
 # GET
-@app.route("/movies")
+@app.route("/revenue")
 def retrieve_revenue(table):
     response = table.scan(
         ExpressionAttributeValues={
@@ -41,7 +41,7 @@ def retrieve_revenue(table):
 
 if __name__ == '__main__':
     
-    # dynamodb = boto3.resource('dynamodb')
-    # table = dynamodb.Table('movies')
+    dynamodb = boto3.resource('dynamodb')
+    table = dynamodb.Table('movies')
 
     app.run(host='0.0.0.0', port=5000)
