@@ -1,7 +1,20 @@
-from flask import Flask
+from flask import Flask, jsonify
 import boto3
+import json
+import decimal
+
+
+class DecimalEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, decimal.Decimal):
+            if abs(o) % 1 > 0:
+                return float(o)
+            else:
+                return int(o)
+        return super(DecimalEncoder, self).default(o)
 
 app = Flask(__name__)
+app.json_encoder = DecimalEncoder
 
 # GET
 @app.route('/info')
@@ -36,7 +49,7 @@ def get_movie_info():
         else:
             break
     
-    return items
+    return jsonify(items)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
