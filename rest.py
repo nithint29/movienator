@@ -29,6 +29,7 @@ def get_movie_info():
         ExpressionAttributeNames={
             '#release_status':'status'
         },
+        ProjectionExpression='title,genres,poster_path,revenue',
         FilterExpression='#release_status <> :status'
     )
 
@@ -43,6 +44,7 @@ def get_movie_info():
                 ExpressionAttributeNames={
                     '#release_status':'status'
                 },
+                ProjectionExpression='title,genres,poster_path,revenue',
                 FilterExpression='#release_status <> :status'
             )
             items += response['Items']
