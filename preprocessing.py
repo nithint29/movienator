@@ -79,8 +79,7 @@ def release_info(table):
         quarter = decimal.Decimal( (int(release[1])-1)//3 + 1)
         update = table.update_item(
             Key={
-                'Title':movie['Title'],
-                'ID':movie['ID']
+                'id':movie['id']
             },
             UpdateExpression="set release_month = :m, release_quarter = :q",
             ExpressionAttributeValues={
@@ -100,9 +99,9 @@ if __name__=='__main__':
     print(table.creation_date_time)
     # print(table.scan())
 
-    response = table.query(
-        KeyConditionExpression=Key('Title').eq("Inception")
-    )
+    # response = table.query(
+    #     KeyConditionExpression=Key('Title').eq("Inception")
+    # )
 
     data = fullscan(table)
 
