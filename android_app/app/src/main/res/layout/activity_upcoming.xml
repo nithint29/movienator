@@ -4,12 +4,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.admin.movienator.PastMovies">
+    tools:context="com.example.admin.movienator.Upcoming">
 
     <ListView
-        android:id="@+id/androidList"
+        android:id="@+id/androidListU"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
+
 
 
 </RelativeLayout>

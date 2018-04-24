@@ -74,7 +74,7 @@ public class ListAdapter extends BaseAdapter {
         }
 
         viewHolder.txtTitle.setText(values[position]);
-        viewHolder.textPrediction.setText("Prediction: "+numbers[position]);
+        viewHolder.textPrediction.setText("Revenue: "+numbers[position]);
         viewHolder.icon.setImageResource(R.drawable.ic_menu_camera);
         new DownloadImageTask((ImageView) viewHolder.icon)
                 .execute(images[position]);
