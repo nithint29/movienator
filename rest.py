@@ -1,5 +1,6 @@
 from flask import Flask, jsonify
 import boto3
+from boto3.dynamodb.conditions import Attr
 import json
 import decimal
 
@@ -24,13 +25,13 @@ def get_movie_info():
 
     response = table.scan(
         ExpressionAttributeValues={
-            ':status':'Released',
+            ':status':'Released'
         },
         ExpressionAttributeNames={
             '#release_status':'status'
         },
         ProjectionExpression='title,genres,poster_path,revenue',
-        FilterExpression='#release_status <> :status'
+        FilterExpression=Attr('revenue').gt(1000000) and '#release_status <> :status'  
     )
 
     items = response['Items']
@@ -93,3 +94,4 @@ def get_past_info():
 
 if __name__ == '__main__':
     app.run(host='172.30.20.201', port=5000)
+    #app.run(host='0.0.0.0', port=5000)
