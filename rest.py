@@ -25,13 +25,15 @@ def get_movie_info():
 
     response = table.scan(
         ExpressionAttributeValues={
-            ':status':'Released'
+            ':status':'Released',
+            ':revenue':1000000
         },
         ExpressionAttributeNames={
-            '#release_status':'status'
+            '#release_status':'status',
+            '#rev':'revenue'
         },
         ProjectionExpression='title,genres,poster_path,revenue',
-        FilterExpression=Attr('revenue').gt(1000000) and '#release_status <> :status'  
+        FilterExpression='#release_status <> :status and #rev >= :revenue'  
     )
 
     items = response['Items']
