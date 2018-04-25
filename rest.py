@@ -40,15 +40,16 @@ def get_movie_info():
     while True:
         if response.get('LastEvaluatedKey'):
             response = table.scan(
-                ExclusiveStartKey=response['LastEvaluatedKey'],
                 ExpressionAttributeValues={
-                    ':released':'Released',
+                    ':status':'Released',
+                    ':revenue':1000000
                 },
                 ExpressionAttributeNames={
-                    '#release_status':'status'
+                    '#release_status':'status',
+                    '#rev':'revenue'
                 },
                 ProjectionExpression='title,genres,poster_path,revenue',
-                FilterExpression='#release_status <> :status'
+                FilterExpression='#release_status <> :status and #rev >= :revenue'  
             )
             items += response['Items']
         else:
