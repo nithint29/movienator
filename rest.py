@@ -33,7 +33,7 @@ def get_movie_info():
             '#rev':'revenue'
         },
         ProjectionExpression='title,genres,poster_path,revenue',
-        FilterExpression='#release_status <> :status and #rev >= :revenue'  
+        FilterExpression='#release_status <> :status and #rev >= :revenue'
     )
 
     items = response['Items']

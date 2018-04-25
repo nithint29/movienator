@@ -58,7 +58,8 @@ public class Upcoming extends AppCompatActivity {
             for(int i=0;i<size;i++){
                 title[i] = jarr.getJSONObject(i).get("title").toString();
                 images[i] = "http://image.tmdb.org/t/p/w185/"+jarr.getJSONObject(i).get("poster_path").toString();
-                prediction[i] = jarr.getJSONObject(i).get("revenue").toString();
+                long p = Math.round((double)jarr.getJSONObject(i).get("revenue"));
+                prediction[i] = p+"";
             }
         }
         catch(Exception e){

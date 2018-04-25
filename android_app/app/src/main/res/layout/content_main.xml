@@ -9,9 +9,11 @@
     tools:showIn="@layout/app_bar_main">
 
     <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!"
+        android:layout_width="211dp"
+        android:layout_height="213dp"
+        android:text="Welcome to the movie success prediction app. Use the navbar to view past movie revenue information or view predictions for upcoming movies."
+        android:textAlignment="center"
+        android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"

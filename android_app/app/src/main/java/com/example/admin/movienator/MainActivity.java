@@ -139,22 +139,16 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_gallery) {
+        if (id == R.id.nav_past) {
             Toast.makeText(getApplicationContext(), "Movies", Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(this, PastMovies.class);
             startActivity(intent);
 
 
-        } else if (id == R.id.nav_slideshow) {
+        } else if (id == R.id.nav_upcoming) {
             Toast.makeText(getApplicationContext(), "Movies", Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(this, Upcoming.class);
             startActivity(intent);
-
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
 
         }
 
